@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IIT Hyderabad - SNCC Multi-Sport Recreation Portal</title>
+    <!-- Official Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --iith-navy: #00188F;
+            --iith-red: #E50C0C;
+            --iith-orange: #FF7B00;
+            --iith-yellow: #FFC000;
+            --iith-light-bg: #F4F6F9;
+            --iith-card: #FFFFFF;
+            --border-color: #E2E8F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--iith-light-bg);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--iith-navy);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-brand img {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .header-title h1 { font-size: 18px; font-weight: 700; margin: 0; }
+        .header-title p { font-size: 13px; color: var(--iith-yellow); margin-top: 3px; }
+        .sports-icons-bar { font-size: 20px; letter-spacing: 4px; }
+
+        .tri-stripe { display: flex; height: 5px; width: 100%; }
+        .tri-stripe .stripe-red { background-color: var(--iith-red); flex: 1; }
+        .tri-stripe .stripe-orange { background-color: var(--iith-orange); flex: 1; }
+        .tri-stripe .stripe-yellow { background-color: var(--iith-yellow); flex: 1; }
+
+        .location-banner {
+            padding: 10px 18px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+        .loc-verified {
+            background-color: #ECFDF5;
+            color: #065F46;
+            border-bottom: 1px solid #A7F3D0;
+        }
+        .loc-remote {
+            background-color: #FEF2F2;
+            color: #991B1B;
+            border-bottom: 1px solid #FECACA;
+        }
+
+        .tabs-container {
+            width: 100%;
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 0 15px 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            background-color: white;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            background: none;
+            font-size: 14px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .tab-btn.active {
+            color: var(--iith-navy);
+            border-bottom: 3px solid var(--iith-navy);
+        }
+
+        .tab-content { display: none; padding: 20px 0; flex-direction: column; gap: 18px; }
+        .tab-content.active { display: flex; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .section-title { font-size: 15px; font-weight: bold; color: var(--iith-navy); }
+
+        .card {
+            background-color: var(--iith-card);
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid var(--border-color);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: white;
+        }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px; }
+        th { background-color: #FAFAFA; color: var(--iith-navy); font-weight: bold; padding: 12px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+
+        .form-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+        .form-group { flex: 1; min-width: 150px; display: flex; flex-direction: column; gap: 5px; }
+        label { font-size: 13px; font-weight: 600; color: var(--iith-navy); }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 14px;
+            background-color: white;
+        }
+
+        .btn { padding: 9px 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-align: center; font-size: 13px; transition: 0.2s; }
+        .btn-navy { background-color: var(--iith-navy); color: white; }
+        .btn-navy:hover { opacity: 0.9; }
+        .btn-red { background-color: var(--iith-red); color: white; }
+        .btn-red:hover { opacity: 0.9; }
+        .btn-outline-red { background-color: white; color: var(--iith-red); border: 1px solid var(--iith-red); }
+        .btn-full { width: 100%; }
+
+        .badge-status { font-weight: bold; font-size: 13px; }
+        .status-EMPTY { color: #28A745; }
+        .status-FULL { color: #DC3545; }
+        .status-MAINTENANCE { color: #FF7B00; }
+        .status-OFFICIAL-MATCH { color: #8E44AD; }
+        .status-NSO-Practice { color: #00A8CC; }
+        .status-Inter-IIT-Practice { color: #00188F; }
+
+        .user-tag {
+            background-color: #EEF2FF;
+            color: var(--iith-navy);
+            border: 1px solid #C7D2FE;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 5px;
+        }
+
+        .my-spot-banner {
+            background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+            border: 1px solid #93C5FD;
+            border-radius: 8px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #snackbar {
+            visibility: hidden;
+            min-width: 260px;
+            background-color: #28A745;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px 18px;
+            position: fixed;
+            z-index: 1000;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+        }
+        #snackbar.error { background-color: var(--iith-red); }
+        #snackbar.show { visibility: visible; }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-brand">
+            <img src="https://www.iith.ac.in/assets/images/logo.png" alt="IITH Logo" onerror="this.outerHTML='<span style=\'font-size: 38px;\'>🏛️</span>'">
+            <div class="header-title">
+                <h1>IIT HYDERABAD</h1>
+                <p>SNCC Multi-Sport Recreation Portal</p>
+            </div>
+        </div>
+        <div class="sports-icons-bar">🏸 🏓 🏀 🏐 🎯 ♟️ ⚽</div>
+    </header>
+
+    <!-- Signature Tri-Stripe -->
+    <div class="tri-stripe">
+        <div class="stripe-red"></div>
+        <div class="stripe-orange"></div>
+        <div class="stripe-yellow"></div>
+    </div>
+
+    <!-- Location Check Bar (Real GPS request only - strictly verified) -->
+    <div id="location-bar" class="location-banner loc-remote">
+        <div id="location-text">📍 Location Check: Location access required to verify physical presence at SNCC Sports Complex.</div>
+        <button id="request-loc-btn" class="btn btn-navy" style="font-size: 12px; padding: 6px 12px;" onclick="requestLocation()">
+            📍 Request Location Check
+        </button>
+    </div>
+
+    <div class="tabs-container">
+        <!-- Tabs Switcher -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" id="tab-btn-student" onclick="switchTab('student')">
+                👥 Student View & Queue
+            </button>
+            <button class="tab-btn" id="tab-btn-staff" onclick="switchTab('staff')">
+                ⚙️ Staff Portal
+            </button>
+        </div>
+
+        <!-- Student Tab Content -->
+        <div id="student-tab" class="tab-content active">
+           
+            <!-- My Active Queue Spot Banner (Owner Only) -->
+            <div id="my-spot-banner" class="my-spot-banner" style="display: none;">
+                <div>
+                    <div style="font-weight: bold; color: var(--iith-navy); font-size: 14px;" id="my-spot-title">
+                        🎯 You are in Queue #1 (Your Spot)
+                    </div>
+                    <div style="font-size: 12px; color: #475569; margin-top: 3px;" id="my-spot-desc">
+                        Registered spot
+                    </div>
+                </div>
+                <button class="btn btn-outline-red" style="font-size: 12px; padding: 6px 12px;" onclick="leaveMyQueue()">
+                    ❌ Leave Queue
+                </button>
+            </div>
+
+            <!-- Facilities Header & Filter -->
+            <div class="section-header">
+                <span class="section-title">Current Facilities Availability</span>
+                <select id="filter-sport" style="width: 220px;" onchange="renderFacilities()">
+                    <option value="ALL">All Sports</option>
+                    <option value="Badminton">🏸 Badminton</option>
+                    <option value="Table Tennis">🏓 Table Tennis</option>
+                    <option value="Basketball">🏀 Basketball</option>
+                    <option value="Volleyball">🏐 Volleyball</option>
+                    <option value="Carrom">🎯 Carrom</option>
+                    <option value="Chess">♟️ Chess</option>
+                    <option value="Foosball">⚽ Foosball</option>
+                </select>
+            </div>
+
+            <!-- Facilities Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sport</th>
+                            <th>Facility / Court</th>
+                            <th>Status</th>
+                            <th>Game Start & Active Players</th>
+                            <th>Waiting in Queue</th>
+                            <th style="text-align: right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="facilities-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Live Waiting Queue Title -->
+            <div class="section-header" style="margin-top: 5px;">
+                <span class="section-title">Live Waiting Queue</span>
+                <span style="font-size: 12px; color: #64748B;">* Only you can leave your own spot</span>
+            </div>
+
+            <!-- Live Waiting Queue Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Pos #</th>
+                            <th>Sport</th>
+                            <th>Facility</th>
+                            <th>Student Name</th>
+                            <th>Roll Number</th>
+                            <th style="text-align: right;">Queue Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="queue-table-body">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Join Sport Waiting Queue Card -->
+            <div class="card">
+                <span style="font-size: 14px; font-weight: bold; color: var(--iith-navy); display: block; margin-bottom: 12px;">
+                    ➕ Join Sport Waiting Queue / Instant Claim
+                </span>
+                <form id="join-queue-form" onsubmit="handleJoinQueue(event)">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Student Name</label>
+                            <input type="text" id="student-name" placeholder="e.g. Rohita" required oninput="savePersonalDetails()">
+                        </div>
+                        <div class="form-group">
+                            <label>Roll Number</label>
+                            <input type="text" id="student-roll" placeholder="e.g. CS23BTECH11000" required oninput="savePersonalDetails()">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Select Sport</label>
+                            <select id="student-sport" onchange="updateCourtDropdown('student-sport', 'student-court')">
+                                <option value="Badminton">🏸 Badminton</option>
+                                <option value="Table Tennis">🏓 Table Tennis</option>
+                                <option value="Basketball">🏀 Basketball</option>
+                                <option value="Volleyball">🏐 Volleyball</option>
+                                <option value="Carrom">🎯 Carrom</option>
+                                <option value="Chess">♟️ Chess</option>
+                                <option value="Foosball">⚽ Foosball</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Facility / Court</label>
+                            <select id="student-court">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group" style="align-self: flex-end;">
+                            <button type="submit" class="btn btn-navy" style="width: 100%; height: 42px;">
+                                Join Queue / Claim
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Refresh Button -->
+            <button class="btn btn-red btn-full" style="padding: 12px; font-size: 14px;" onclick="syncData()">
+                🔄 Refresh Status & Queue
+            </button>
+        </div>
+
+        <!-- Staff Tab Content -->
+        <div id="staff-tab" class="tab-content">
+            <div class="card" style="display: flex; flex-direction: column; gap: 14px;">
+                <div class="form-group">
+                    <label>Staff ID Authentication <span style="font-size: 11.5px; font-weight: normal; color: #64748B;">(e.g. 1234, admin, STAFF01)</span></label>
+                    <input type="text" id="staff-id" placeholder="Enter Staff ID or PIN (e.g. 1234, admin, STAFF01)">
+                </div>
+
+                <div class="form-group">
+                    <label>Select Sport</label>
+                    <select id="staff-sport" onchange="updateCourtDropdown('staff-sport', 'staff-court')">
+                        <option value="Badminton">🏸 Badminton</option>
+                        <option value="Table Tennis">🏓 Table Tennis</option>
+                        <option value="Basketball">🏀 Basketball</option>
+                        <option value="Volleyball">🏐 Volleyball</option>
+                        <option value="Carrom">🎯 Carrom</option>
+                        <option value="Chess">♟️ Chess</option>
+                        <option value="Foosball">⚽ Foosball</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Facility / Court / Table Number</label>
+                    <select id="staff-court">
+                        <!-- Populated dynamically -->
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Update Availability Status</label>
+                    <select id="staff-status">
+                        <option value="EMPTY">EMPTY</option>
+                        <option value="FULL">FULL</option>
+                        <option value="MAINTENANCE">MAINTENANCE</option>
+                        <option value="OFFICIAL MATCH">OFFICIAL MATCH</option>
+                        <option value="NSO Practice">NSO Practice</option>
+                        <option value="Inter-IIT Practice">Inter-IIT Practice</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-red btn-full" onclick="handleStaffUpdate()">
+                    Submit Status Update
+                </button>
+
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 6px 0;">
+
+                <button class="btn btn-navy btn-full" onclick="handleStaffAdmitNext()">
+                    ▶ Admit Next Student in Queue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Snackbar -->
+    <div id="snackbar">Notification</div>
+
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = "https://jxdpcevgtdaxenqeqdhv.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZHBjZXZndGRheGVucWVxZGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MDk2MDQsImV4cCI6MjEwNTk4NTYwNH0.szdIjCRGursiHZigx17PZmwgx76MGqvfCsuff7zF3nE";
+       
+        let db = null;
+        try {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (e) {
+            console.warn("Supabase init error:", e);
+        }
+
+        // Sports Configuration (Exactly ONE foosball table)
+        const SPORTS_CONFIG = {
+            "Badminton": { count: 4, icon: "🏸", unit: "Court" },
+            "Table Tennis": { count: 4, icon: "🏓", unit: "Table" },
+            "Basketball": { count: 2, icon: "🏀", unit: "Court" },
+            "Volleyball": { count: 2, icon: "🏐", unit: "Court" },
+            "Carrom": { count: 3, icon: "🎯", unit: "Table" },
+            "Chess": { count: 3, icon: "♟️", unit: "Table" },
+            "Foosball": { count: 1, icon: "⚽", unit: "Table" }
+        };
+
+        // Geofencing Coordinates: IITH SNCC Complex
+        const SNCC_LAT = 17.5947;
+        const SNCC_LNG = 78.1230;
+        const ALLOWED_RADIUS_METERS = 300;
+
+        let isAtSNCC = false;
+        let currentDistanceMeters = null;
+        let locationStatus = 'unverified';
+        let facilities = [];
+        let queue = [];
+
+        // Initialize default facilities
+        function initDefaultFacilities() {
+            facilities = [];
+            for (const [sport, cfg] of Object.entries(SPORTS_CONFIG)) {
+                for (let i = 1; i <= cfg.count; i++) {
+                    facilities.push({
+                        id: `${sport.toLowerCase().replace(/\\s+/g, '-')}-${i}`,
+                        sport_name: sport,
+                        court_no: i,
+                        availability: 'EMPTY',
+                        current_player: null,
+                        occupied_since: null,
+                        updated_at: Date.now()
+                    });
+                }
+            }
+        }
+        initDefaultFacilities();
+
+        // Snackbar helper
+        function showToast(message, isError = false) {
+            const sb = document.getElementById("snackbar");
+            sb.textContent = message;
+            sb.className = isError ? "show error" : "show";
+            setTimeout(() => { sb.className = ""; }, 3000);
+        }
+
+        // Tab Switcher
+        function switchTab(tab) {
+            document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+            document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+            if (tab === 'student') {
+                document.getElementById("tab-btn-student").classList.add("active");
+                document.getElementById("student-tab").classList.add("active");
+            } else {
+                document.getElementById("tab-btn-staff").classList.add("active");
+                document.getElementById("staff-tab").classList.add("active");
+            }
+        }
+
+        // Save & Load personal details in LocalStorage
+        function savePersonalDetails() {
+            const name = document.getElementById("student-name").value.trim();
+            const roll = document.getElementById("student-roll").value.trim().toUpperCase();
+            if (roll) localStorage.setItem("iith_user_roll", roll);
+            if (name) localStorage.setItem("iith_user_name", name);
+            renderQueue();
+            updateMySpotBanner();
+        }
+
+        function getSavedRoll() {
+            const inputRoll = document.getElementById("student-roll").value.trim().toUpperCase();
+            return inputRoll || (localStorage.getItem("iith_user_roll") || "").toUpperCase();
+        }
+
+        function loadPersonalDetails() {
+            const savedRoll = localStorage.getItem("iith_user_roll");
+            const savedName = localStorage.getItem("iith_user_name");
+            if (savedRoll) document.getElementById("student-roll").value = savedRoll;
+            if (savedName) document.getElementById("student-name").value = savedName;
+        }
+
+        // Update dropdown courts based on sport
+        function updateCourtDropdown(sportSelectId, courtSelectId) {
+            const sport = document.getElementById(sportSelectId).value;
+            const courtSelect = document.getElementById(courtSelectId);
+            courtSelect.innerHTML = "";
+            const count = SPORTS_CONFIG[sport]?.count || 1;
+            const unit = SPORTS_CONFIG[sport]?.unit || "Court";
+            for (let i = 1; i <= count; i++) {
+                const opt = document.createElement("option");
+                opt.value = i;
+                opt.textContent = `${unit} ${i}`;
+                courtSelect.appendChild(opt);
+            }
+        }
+
+        // Geofencing verification helper
+        function calculateDistance(lat, lng) {
+            const R = 6371e3;
+            const dLat = (lat - SNCC_LAT) * Math.PI / 180;
+            const dLng = (lng - SNCC_LNG) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(SNCC_LAT * Math.PI / 180) * Math.cos(lat * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return Math.round(R * c);
+        }
+
+        function updateLocationUI(customMsg) {
+            const bar = document.getElementById("location-bar");
+            const text = document.getElementById("location-text");
+            const btn = document.getElementById("request-loc-btn");
+            if (customMsg) text.innerHTML = customMsg;
+
+            if (locationStatus === 'verified_onsite') {
+                bar.className = "location-banner loc-verified";
+                btn.textContent = "🔄 Re-check GPS";
+                btn.className = "btn";
+                btn.style.backgroundColor = "white";
+                btn.style.color = "var(--iith-navy)";
+                btn.style.border = "1px solid #CBD5E1";
+                btn.disabled = false;
+            } else if (locationStatus === 'requesting') {
+                bar.className = "location-banner loc-remote";
+                btn.textContent = "⏳ Requesting GPS Access...";
+                btn.disabled = true;
+            } else if (locationStatus === 'denied') {
+                bar.className = "location-banner loc-remote";
+                btn.textContent = "🔒 Allow Location Access";
+                btn.className = "btn btn-navy";
+                btn.style.backgroundColor = "var(--iith-navy)";
+                btn.style.color = "white";
+                btn.disabled = false;
+            } else {
+                bar.className = "location-banner loc-remote";
+                btn.textContent = "📍 Request Location Check";
+                btn.className = "btn btn-navy";
+                btn.style.backgroundColor = "var(--iith-navy)";
+                btn.style.color = "white";
+                btn.disabled = false;
+            }
+        }
+
+        // Real browser location request - strictly asking for browser permission
+        function requestLocation() {
+            if (!navigator.geolocation) {
+                locationStatus = 'error';
+                isAtSNCC = false;
+                updateLocationUI('❌ Geolocation is not supported by your browser.');
+                return;
+            }
+
+            locationStatus = 'requesting';
+            updateLocationUI('⏳ Requesting GPS location access from your browser...');
+
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude);
+                    currentDistanceMeters = dist;
+                    if (dist <= ALLOWED_RADIUS_METERS) {
+                        locationStatus = 'verified_onsite';
+                        isAtSNCC = true;
+                        updateLocationUI(`✅ <b>Location Check Verified:</b> At IITH SNCC Sports Complex (${dist}m from courts). Court claiming and dispute actions enabled!`);
+                        showToast(`📍 GPS Verified: You are on-site at SNCC! (${dist}m)`);
+                    } else {
+                        locationStatus = 'remote';
+                        isAtSNCC = false;
+                        updateLocationUI(`❌ <b>Location Check:</b> Outside SNCC (${dist}m away). You must be physically at SNCC to claim or flag courts.`);
+                        showToast(`📍 Remote: ${dist}m to SNCC Complex (Must be at SNCC to claim/flag)`);
+                    }
+                    renderFacilities();
+                },
+                err => {
+                    isAtSNCC = false;
+                    currentDistanceMeters = null;
+                    if (err.code === 1) { // PERMISSION_DENIED
+                        locationStatus = 'denied';
+                        updateLocationUI('🔒 <b>Location Permission Denied:</b> Please enable location permissions in your browser to verify you are at SNCC.');
+                        showToast('❌ Location permission denied. Please allow location access.', true);
+                    } else if (err.code === 2) {
+                        locationStatus = 'error';
+                        updateLocationUI('⚠️ <b>GPS Unavailable:</b> Please turn on device location services and retry.');
+                        showToast('⚠️ GPS location unavailable.', true);
+                    } else if (err.code === 3) {
+                        locationStatus = 'error';
+                        updateLocationUI('⏳ <b>GPS Timed Out:</b> Click "Request Location Check" to try again.');
+                        showToast('⏳ Location check timed out.', true);
+                    } else {
+                        locationStatus = 'error';
+                        updateLocationUI(`⚠️ Location check failed: ${err.message}`);
+                    }
+                    renderFacilities();
+                },
+                { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+            );
+        }
+
+        // Auto request on page load
+        requestLocation();
+
+        // Format game time display
+        function formatGameTime(occupiedSince) {
+            if (!occupiedSince) return "—";
+            const date = new Date(occupiedSince);
+            const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const minsAgo = Math.max(0, Math.floor((Date.now() - occupiedSince) / 60000));
+            return `⏱️ ${timeStr} (${minsAgo}m ago)`;
+        }
+
+        // Auto-admit check: If court is empty and someone is waiting, promote them
+        function checkAutoPromotion() {
+            facilities.forEach(fac => {
+                if (fac.availability === 'EMPTY') {
+                    const qIdx = queue.findIndex(q => q.sport_name === fac.sport_name && Number(q.court_no) === Number(fac.court_no));
+                    if (qIdx !== -1) {
+                        const nextStudent = queue.splice(qIdx, 1)[0];
+                        fac.availability = 'FULL';
+                        fac.current_player = `${nextStudent.student_name} (${nextStudent.roll_no})`;
+                        fac.occupied_since = Date.now();
+                        fac.updated_at = Date.now();
+                        if (db) {
+                            db.from('court_queue').delete().eq('id', nextStudent.id).then();
+                        }
+                    }
+                }
+            });
+        }
+
+        // Render Facilities Table
+        function renderFacilities() {
+            const filterSport = document.getElementById("filter-sport").value;
+            const tbody = document.getElementById("facilities-table-body");
+            tbody.innerHTML = "";
+
+            facilities.filter(f => filterSport === "ALL" || f.sport_name === filterSport).forEach(f => {
+                const cfg = SPORTS_CONFIG[f.sport_name] || { count: 1, icon: "🏅", unit: "Court" };
+                const qCount = queue.filter(q => q.sport_name === f.sport_name && Number(q.court_no) === Number(f.court_no)).length;
+                const statusClass = `status-${f.availability.replace(/\\s+/g, '-')}`;
+
+                const tr = document.createElement("tr");
+
+                // Sport
+                const tdSport = document.createElement("td");
+                tdSport.innerHTML = `${cfg.icon} <b>${f.sport_name}</b>`;
+                tr.appendChild(tdSport);
+
+                // Facility / Court
+                const tdCourt = document.createElement("td");
+                tdCourt.innerHTML = `<b>${cfg.unit} ${f.court_no}</b>`;
+                tr.appendChild(tdCourt);
+
+                // Status
+                const tdStatus = document.createElement("td");
+                tdStatus.className = `badge-status ${statusClass}`;
+                tdStatus.textContent = f.availability;
+                tr.appendChild(tdStatus);
+
+                // Game Start & Players
+                const tdTime = document.createElement("td");
+                if (f.availability === 'FULL') {
+                    tdTime.innerHTML = `
+                        <div style="font-weight: 600; color: #1E293B;">${formatGameTime(f.occupied_since)}</div>
+                        <div style="font-size: 11.5px; color: #64748B;">👤 ${f.current_player || 'Active Players'}</div>
+                    `;
+                } else if (f.availability === 'EMPTY') {
+                    tdTime.innerHTML = `<span style="color: #28A745; font-size: 12px; font-weight: 600;">🟢 Vacant (Ready to play)</span>`;
+                } else {
+                    tdTime.innerHTML = `<span style="color: #64748B; font-size: 12px;">🔒 ${f.availability}</span>`;
+                }
+                tr.appendChild(tdTime);
+
+                // Waiting Count
+                const tdQueue = document.createElement("td");
+                if (qCount > 0) {
+                    tdQueue.innerHTML = `<span style="color: var(--iith-orange); font-weight: 700;">${qCount} Waiting</span>`;
+                } else {
+                    tdQueue.innerHTML = `<span style="color: #94A3B8;">No Queue</span>`;
+                }
+                tr.appendChild(tdQueue);
+
+                // Actions: Claim and Flag as Empty both require physical SNCC presence
+                const tdAction = document.createElement("td");
+                tdAction.style.textAlign = "right";
+
+                if (f.availability === 'EMPTY') {
+                    const claimBtn = document.createElement("button");
+                    claimBtn.style.padding = "6px 12px";
+                    claimBtn.style.fontSize = "12px";
+                    if (!isAtSNCC) {
+                        claimBtn.className = "btn";
+                        claimBtn.textContent = "🔒 Claim (At SNCC Only)";
+                        claimBtn.style.backgroundColor = "#F1F5F9";
+                        claimBtn.style.color = "#64748B";
+                        claimBtn.style.border = "1px solid #CBD5E1";
+                        claimBtn.title = "You must be physically at SNCC Sports Complex to claim a court";
+                        claimBtn.onclick = () => {
+                            requestLocation();
+                            showToast("📍 Location Check Required: Please allow GPS access to verify you are at SNCC.", true);
+                        };
+                    } else {
+                        claimBtn.className = "btn btn-navy";
+                        claimBtn.textContent = "1-Tap Claim";
+                        claimBtn.onclick = () => claimCourtOnSite(f.sport_name, f.court_no);
+                    }
+                    tdAction.appendChild(claimBtn);
+                } else if (f.availability === 'FULL') {
+                    const flagBtn = document.createElement("button");
+                    flagBtn.style.padding = "6px 12px";
+                    flagBtn.style.fontSize = "11.5px";
+                    if (!isAtSNCC) {
+                        flagBtn.className = "btn";
+                        flagBtn.textContent = "🔒 Flag (At SNCC Only)";
+                        flagBtn.style.backgroundColor = "#F1F5F9";
+                        flagBtn.style.color = "#64748B";
+                        flagBtn.style.border = "1px solid #CBD5E1";
+                        flagBtn.title = "You must be physically present at SNCC Sports Complex to flag a court as empty";
+                        flagBtn.onclick = () => flagCourtEmpty(f.sport_name, f.court_no);
+                    } else {
+                        flagBtn.className = "btn btn-outline-red";
+                        flagBtn.textContent = "🚩 Flag as Empty";
+                        flagBtn.title = "If no one is playing, flag this court to release it or assign to next student";
+                        flagBtn.onclick = () => flagCourtEmpty(f.sport_name, f.court_no);
+                    }
+                    tdAction.appendChild(flagBtn);
+                } else {
+                    tdAction.innerHTML = `<span style="color: #94A3B8; font-size: 12px;">Reserved</span>`;
+                }
+                tr.appendChild(tdAction);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Render Waiting Queue Table
+        function renderQueue() {
+            const filterSport = document.getElementById("filter-sport").value;
+            const tbody = document.getElementById("queue-table-body");
+            tbody.innerHTML = "";
+            const myRoll = getSavedRoll();
+
+            const filtered = queue.filter(q => filterSport === "ALL" || q.sport_name === filterSport);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="padding: 22px; text-align: center; color: #94A3B8;">No students currently waiting in queue.</td></tr>`;
+                return;
+            }
+
+            filtered.forEach((q, idx) => {
+                const cfg = SPORTS_CONFIG[q.sport_name] || { count: 1, icon: "🏅", unit: "Court" };
+                const isMe = myRoll && q.roll_no && q.roll_no.toUpperCase() === myRoll;
+
+                const tr = document.createElement("tr");
+                if (isMe) tr.style.backgroundColor = "#F0FDF4";
+
+                // Pos #
+                const tdPos = document.createElement("td");
+                tdPos.innerHTML = `<b style="color: var(--iith-orange);">#${idx + 1}</b>`;
+                tr.appendChild(tdPos);
+
+                // Sport
+                const tdSport = document.createElement("td");
+                tdSport.innerHTML = `${cfg.icon} ${q.sport_name}`;
+                tr.appendChild(tdSport);
+
+                // Facility
+                const tdCourt = document.createElement("td");
+                tdCourt.innerHTML = `${cfg.unit} ${q.court_no}`;
+                tr.appendChild(tdCourt);
+
+                // Student Name
+                const tdName = document.createElement("td");
+                tdName.innerHTML = `<b>${q.student_name}</b> ${isMe ? '<span class="user-tag">You</span>' : ''}`;
+                tr.appendChild(tdName);
+
+                // Roll Number
+                const tdRoll = document.createElement("td");
+                tdRoll.style.fontFamily = "monospace";
+                tdRoll.textContent = q.roll_no;
+                tr.appendChild(tdRoll);
+
+                // Action: ONLY SHOW LEAVE QUEUE IF IT IS THIS STUDENT
+                const tdAct = document.createElement("td");
+                tdAct.style.textAlign = "right";
+                if (isMe) {
+                    const leaveBtn = document.createElement("button");
+                    leaveBtn.className = "btn btn-outline-red";
+                    leaveBtn.style.padding = "5px 10px";
+                    leaveBtn.style.fontSize = "11.5px";
+                    leaveBtn.textContent = "❌ Leave Queue";
+                    leaveBtn.onclick = () => leaveQueueEntry(q.id);
+                    tdAct.appendChild(leaveBtn);
+                } else {
+                    tdAct.innerHTML = `<span style="color: #CBD5E1;">—</span>`;
+                }
+                tr.appendChild(tdAct);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Update My Spot Banner
+        function updateMySpotBanner() {
+            const myRoll = getSavedRoll();
+            const banner = document.getElementById("my-spot-banner");
+            if (!myRoll) {
+                banner.style.display = "none";
+                return;
+            }
+
+            const myIdx = queue.findIndex(q => q.roll_no && q.roll_no.toUpperCase() === myRoll);
+            if (myIdx !== -1) {
+                const q = queue[myIdx];
+                const cfg = SPORTS_CONFIG[q.sport_name] || { unit: "Court", icon: "🏅" };
+                document.getElementById("my-spot-title").textContent = `🎯 You are in Queue Position #${myIdx + 1} (Your Spot)`;
+                document.getElementById("my-spot-desc").textContent = `${cfg.icon} ${q.sport_name} · ${cfg.unit} ${q.court_no} · Registered as ${q.student_name} (${q.roll_no})`;
+                banner.style.display = "flex";
+            } else {
+                banner.style.display = "none";
+            }
+        }
+
+        // 1-Tap Claim on Site (Requires physical presence at SNCC)
+        async function claimCourtOnSite(sport, courtNo) {
+            if (!isAtSNCC) {
+                requestLocation();
+                showToast(`📍 Location Check Required: You must allow GPS access and be physically at SNCC to claim a court.`, true);
+                return;
+            }
+
+            const myName = document.getElementById("student-name").value.trim() || localStorage.getItem("iith_user_name") || "IITH Student";
+            const myRoll = getSavedRoll() || "ON-SITE";
+
+            const fac = facilities.find(f => f.sport_name === sport && Number(f.court_no) === Number(courtNo));
+            if (!fac) return;
+
+            fac.availability = 'FULL';
+            fac.current_player = `${myName} (${myRoll})`;
+            fac.occupied_since = Date.now();
+            fac.updated_at = Date.now();
+
+            renderFacilities();
+            showToast(`Court claimed successfully! Started match for ${myName}`);
+
+            if (db) {
+                try {
+                    await db.from('sports_facilities').upsert({
+                        sport_name: sport,
+                        court_no: Number(courtNo),
+                        availability: 'FULL'
+                    }, { onConflict: 'sport_name,court_no' });
+                } catch (e) {
+                    console.warn("Database sync notice:", e);
+                }
+            }
+        }
+
+        // Core execution of flagging court empty
+        async function executeFlagCourtEmpty(sport, courtNo) {
+            const fac = facilities.find(f => f.sport_name === sport && Number(f.court_no) === Number(courtNo));
+            if (!fac) return;
+
+            // Check if queue has a waiting student
+            const qIdx = queue.findIndex(q => q.sport_name === sport && Number(q.court_no) === Number(courtNo));
+            if (qIdx !== -1) {
+                const nextInLine = queue.splice(qIdx, 1)[0];
+                fac.availability = 'FULL';
+                fac.current_player = `${nextInLine.student_name} (${nextInLine.roll_no})`;
+                fac.occupied_since = Date.now();
+                showToast(`🚩 Flagged empty! Auto-assigned to next waiting student: ${nextInLine.student_name}!`);
+                if (db) {
+                    try {
+                        await db.from('court_queue').delete().eq('id', nextInLine.id);
+                        await db.from('sports_facilities').upsert({
+                            sport_name: sport,
+                            court_no: Number(courtNo),
+                            availability: 'FULL'
+                        }, { onConflict: 'sport_name,court_no' });
+                    } catch (e) {}
+                }
+            } else {
+                fac.availability = 'EMPTY';
+                fac.current_player = null;
+                fac.occupied_since = null;
+                showToast(`🚩 ${sport} Court ${courtNo} is verified empty and now ready for play!`);
+                if (db) {
+                    try {
+                        await db.from('sports_facilities').upsert({
+                            sport_name: sport,
+                            court_no: Number(courtNo),
+                            availability: 'EMPTY'
+                        }, { onConflict: 'sport_name,court_no' });
+                    } catch (e) {}
+                }
+            }
+
+            fac.updated_at = Date.now();
+            renderFacilities();
+            renderQueue();
+            updateMySpotBanner();
+        }
+
+        // Flag Court Empty (Dispute / Empty Release - Physical presence at SNCC strictly required)
+        async function flagCourtEmpty(sport, courtNo) {
+            if (!isAtSNCC) {
+                if (!navigator.geolocation) {
+                    showToast("❌ Geolocation is not supported by your browser.", true);
+                    return;
+                }
+
+                showToast("📍 Checking GPS to verify physical presence at SNCC Complex...", false);
+
+                navigator.geolocation.getCurrentPosition(
+                    pos => {
+                        const dist = calculateDistance(pos.coords.latitude, pos.coords.longitude);
+                        currentDistanceMeters = dist;
+                        if (dist <= ALLOWED_RADIUS_METERS) {
+                            locationStatus = 'verified_onsite';
+                            isAtSNCC = true;
+                            updateLocationUI(`✅ <b>Location Check Verified:</b> At IITH SNCC Sports Complex (${dist}m from courts). Court claiming and dispute actions enabled!`);
+                            showToast(`📍 GPS Verified: You are on-site at SNCC! (${dist}m)`);
+                            executeFlagCourtEmpty(sport, courtNo);
+                        } else {
+                            locationStatus = 'remote';
+                            isAtSNCC = false;
+                            updateLocationUI(`❌ <b>Location Check:</b> Outside SNCC (${dist}m away). You must be physically at SNCC to claim or flag courts.`);
+                            showToast(`📍 Location Check: You are ${dist}m away from SNCC. You must be physically at SNCC to flag a court as empty!`, true);
+                        }
+                        renderFacilities();
+                    },
+                    err => {
+                        showToast("❌ Location access denied. You must allow GPS access and be physically at SNCC to flag a court as empty.", true);
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+                return;
+            }
+
+            executeFlagCourtEmpty(sport, courtNo);
+        }
+
+        // Join Queue / Direct Auto-Assignment Handler
+        async function handleJoinQueue(e) {
+            e.preventDefault();
+            const name = document.getElementById("student-name").value.trim();
+            const roll = document.getElementById("student-roll").value.trim().toUpperCase();
+            const sport = document.getElementById("student-sport").value;
+            const courtNo = Number(document.getElementById("student-court").value);
+
+            if (!name || !roll) {
+                showToast("Please enter both Student Name and Roll Number!", true);
+                return;
+            }
+
+            savePersonalDetails();
+
+            // Find facility status
+            const targetFac = facilities.find(f => f.sport_name === sport && Number(f.court_no) === courtNo);
+
+            // FEATURE: If court is EMPTY and user joins queue:
+            if (targetFac && targetFac.availability === 'EMPTY') {
+                if (!isAtSNCC) {
+                    requestLocation();
+                    showToast(`📍 Location Check Required: You must be physically at SNCC to claim empty courts immediately. Requesting location...`, true);
+                    return;
+                }
+
+                targetFac.availability = 'FULL';
+                targetFac.current_player = `${name} (${roll})`;
+                targetFac.occupied_since = Date.now();
+                targetFac.updated_at = Date.now();
+
+                renderFacilities();
+                showToast(`Court was empty! Directly assigned to you. Match started at ${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}!`);
+
+                if (db) {
+                    try {
+                        await db.from('sports_facilities').upsert({
+                            sport_name: sport,
+                            court_no: courtNo,
+                            availability: 'FULL'
+                        }, { onConflict: 'sport_name,court_no' });
+                    } catch (e) {}
+                }
+                return;
+            }
+
+            // Otherwise, add to waiting queue
+            const newEntry = {
+                id: `q-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                student_name: name,
+                roll_no: roll,
+                sport_name: sport,
+                court_no: courtNo,
+                created_at: new Date().toISOString()
+            };
+
+            queue.push(newEntry);
+            renderQueue();
+            renderFacilities();
+            updateMySpotBanner();
+            showToast(`Added ${name} to queue at position #${queue.length}!`);
+
+            if (db) {
+                try {
+                    await db.from('court_queue').insert([{
+                        student_name: name,
+                        roll_no: roll,
+                        sport_name: sport,
+                        court_no: courtNo
+                    }]);
+                } catch (e) {}
+            }
+        }
+
+        // Leave Queue (for individual entries)
+        async function leaveQueueEntry(id) {
+            const idx = queue.findIndex(q => q.id === id);
+            if (idx !== -1) {
+                const removed = queue.splice(idx, 1)[0];
+                renderQueue();
+                renderFacilities();
+                updateMySpotBanner();
+                showToast(`Left queue successfully.`);
+                if (db) {
+                    try {
+                        await db.from('court_queue').delete().eq('id', id);
+                    } catch (e) {}
+                }
+            }
+        }
+
+        // Leave My Queue from Banner
+        async function leaveMyQueue() {
+            const myRoll = getSavedRoll();
+            if (!myRoll) return;
+            const myEntry = queue.find(q => q.roll_no && q.roll_no.toUpperCase() === myRoll);
+            if (myEntry) {
+                await leaveQueueEntry(myEntry.id);
+            }
+        }
+
+        // Staff: Update Status (Accepts any Staff ID or PIN, e.g. 1234, admin, STAFF01)
+        async function handleStaffUpdate() {
+            const staffId = document.getElementById("staff-id").value.trim();
+            if (!staffId) {
+                showToast("Please enter your Staff ID or PIN (e.g. 1234, admin, STAFF01).", true);
+                return;
+            }
+
+            const sport = document.getElementById("staff-sport").value;
+            const courtNo = Number(document.getElementById("staff-court").value);
+            const status = document.getElementById("staff-status").value;
+
+            const fac = facilities.find(f => f.sport_name === sport && Number(f.court_no) === courtNo);
+            if (!fac) return;
+
+            fac.availability = status;
+            if (status === 'EMPTY') {
+                fac.current_player = null;
+                fac.occupied_since = null;
+            } else {
+                fac.occupied_since = fac.occupied_since || Date.now();
+            }
+            fac.updated_at = Date.now();
+
+            renderFacilities();
+            showToast(`✅ Updated ${sport} Court ${courtNo} to ${status} by Staff (${staffId})`);
+
+            if (db) {
+                try {
+                    await db.from('sports_facilities').upsert({
+                        sport_name: sport,
+                        court_no: Number(courtNo),
+                        availability: status
+                    }, { onConflict: 'sport_name,court_no' });
+                } catch (e) {
+                    console.warn("Database sync notice:", e);
+                }
+            }
+        }
+
+        // Staff: Admit Next
+        async function handleStaffAdmitNext() {
+            const staffId = document.getElementById("staff-id").value.trim();
+            if (!staffId) {
+                showToast("Please enter your Staff ID or PIN (e.g. 1234, admin, STAFF01).", true);
+                return;
+            }
+
+            const sport = document.getElementById("staff-sport").value;
+            const courtNo = Number(document.getElementById("staff-court").value);
+
+            const qIdx = queue.findIndex(q => q.sport_name === sport && Number(q.court_no) === courtNo);
+            if (qIdx === -1) {
+                showToast("No students waiting in queue for this court.", true);
+                return;
+            }
+
+            const student = queue.splice(qIdx, 1)[0];
+            const fac = facilities.find(f => f.sport_name === sport && Number(f.court_no) === courtNo);
+            if (fac) {
+                fac.availability = 'FULL';
+                fac.current_player = `${student.student_name} (${student.roll_no})`;
+                fac.occupied_since = Date.now();
+                fac.updated_at = Date.now();
+            }
+
+            renderFacilities();
+            renderQueue();
+            updateMySpotBanner();
+            showToast(`✅ Assigned court to next in queue: ${student.student_name}!`);
+
+            if (db) {
+                try {
+                    await db.from('court_queue').delete().eq('id', student.id);
+                    await db.from('sports_facilities').upsert({
+                        sport_name: sport,
+                        court_no: courtNo,
+                        availability: 'FULL'
+                    }, { onConflict: 'sport_name,court_no' });
+                } catch (e) {
+                    console.warn("Database sync notice:", e);
+                }
+            }
+        }
+
+        // Data Synchronization (Supabase + Local)
+        async function syncData() {
+            if (db) {
+                try {
+                    const [facRes, qRes] = await Promise.all([
+                        db.from('sports_facilities').select('*'),
+                        db.from('court_queue').select('*').order('created_at', { ascending: true })
+                    ]);
+
+                    if (!facRes.error && facRes.data && facRes.data.length > 0) {
+                        facRes.data.forEach(remote => {
+                            const local = facilities.find(f => f.sport_name === remote.sport_name && Number(f.court_no) === Number(remote.court_no));
+                            if (local) {
+                                local.availability = remote.availability;
+                            }
+                        });
+                    }
+
+                    if (!qRes.error && qRes.data) {
+                        queue = qRes.data;
+                    }
+                } catch (e) {
+                    console.warn("Supabase fetch fallback:", e);
+                }
+            }
+
+            checkAutoPromotion();
+            renderFacilities();
+            renderQueue();
+            updateMySpotBanner();
+            showToast("Facilities & queue refreshed!");
+        }
+
+        // Initial setup
+        updateCourtDropdown('student-sport', 'student-court');
+        updateCourtDropdown('staff-sport', 'staff-court');
+        loadPersonalDetails();
+        syncData();
+
+        // Auto periodic refresh & elapsed time counter
+        setInterval(() => {
+            renderFacilities();
+        }, 15000);
+    </script>
+</body>
+</html>

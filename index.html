@@ -271,9 +271,9 @@
     <script>
         const SUPABASE_URL = "https://jxdpcevgtdaxenqeqdhv.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp4ZHBjZXZndGRheGVucWVxZGh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MDk2MDQsImV4cCI6MjEwNTk4NTYwNH0.szdIjCRGursiHZigx17PZmwgx76MGqvfCsuff7zF3nE";
-        
+
         let db = null;
-        if (SUPABASE_URL !== "https://jxdpcevgtdaxenqeqdhv.supabase.co") {
+        if (SUPABASE_URL && SUPABASE_URL !== "YOUR_SUPABASE_URL") {
             db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         }
 
